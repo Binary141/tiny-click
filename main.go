@@ -1,36 +1,20 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 )
 
-func insert(c *gin.Context) {
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
-
-	if err != nil {
-		c.JSON(500, err.Error())
-		return
-	}
-
-	defer db.Close()
-
-	_, err = db.Query(`insert into links (test) values (10)`)
-	if err != nil {
-		c.JSON(500, err.Error())
-		return
-	}
-
-	c.JSON(200, "hello")
-}
+const keyLength = 8
 
 func isInvalidKey(key string) bool {
-	if len(key) > 8 {
+	if len(key) > keyLength {
 		return true
 	}
 
@@ -45,31 +29,45 @@ func isInvalidKey(key string) bool {
 	return !match
 }
 
+func insert(c *gin.Context) {
+	redirectKey := uuid.New().String() // c.Query("redirectKey")
+	redirectKey = strings.Replace(redirectKey, "-", "", -1)
+
+	redirectKey = redirectKey[0:keyLength]
+
+	if isInvalidKey(redirectKey) {
+		c.JSON(400, "bad redirectKey")
+		return
+	}
+
+	fmt.Println(c.Query("redirectURL"))
+	redirectURL, err := url.Parse(c.Query("redirectURL"))
+	if err != nil {
+		c.JSON(400, "bad redirectURL")
+		return
+	}
+
+	if redirectURL.Host == "" {
+		c.JSON(400, "bad redirectURL")
+		return
+	}
+
+	err = insertIntoDB(redirectKey, redirectURL.Host)
+	if err != nil {
+		c.JSON(400, fmt.Sprintf("could not insert into db: %s", err.Error()))
+		return
+	}
+
+	c.JSON(200, fmt.Sprintf("Inserted %s!", redirectKey))
+}
+
 func home(c *gin.Context) {
 	c.JSON(200, "Hello world!")
 }
 
-func getUrlFromKey(redirectKey string) (string, error) {
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
-
-	if err != nil {
-		return "", err
-	}
-
-	defer db.Close()
-
-	rows := db.QueryRow(`select redirectURL from links where redirectKey = ?`, redirectKey)
-
-	redirectURL := ""
-	if err := rows.Scan(&redirectURL); err != nil {
-		return "", err
-	}
-
-	return redirectURL, nil
-}
-
 func redirect(c *gin.Context) {
 	redirectKey := c.Param("redirect")
+	fmt.Println("Key: ", redirectKey)
 
 	if isInvalidKey(redirectKey) {
 		fmt.Println("Key was invalid!")
@@ -86,14 +84,24 @@ func redirect(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusMovedPermanently, redirectURL)
+	fmt.Println("Redirect URL: ", redirectURL)
+
+	c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("https://%s", redirectURL))
 }
 
 func main() {
 	router := gin.Default()
-	router.GET("/home", home)
-	router.GET("/insert", insert)
 	router.GET("/:redirect", redirect)
+	router.GET("/home", home)
+
+	routerAdmin := gin.Default()
+	routerAdmin.GET("/insert", insert)
+	routerAdmin.POST("/insert", insert)
+
+	// seperate out the admin routes from the normal routes
+	go func() {
+		_ = routerAdmin.Run(":5001")
+	}()
 
 	_ = router.Run(":5000")
 }
