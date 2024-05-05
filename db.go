@@ -92,3 +92,18 @@ func deleteRedirect(key string) error {
 
 	return nil
 }
+
+func updateRedirect(redirectKey, redirectURL string) error {
+	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+	_, err = db.Exec(`update links set redirectURL = ? where redirectKey = ?`, redirectURL, redirectKey)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

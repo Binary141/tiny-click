@@ -30,7 +30,7 @@ func isInvalidKey(key string) bool {
 }
 
 func insert(c *gin.Context) {
-	redirectKey := uuid.New().String() // c.Query("redirectKey")
+	redirectKey := uuid.New().String()
 	redirectKey = strings.Replace(redirectKey, "-", "", -1)
 
 	redirectKey = redirectKey[0:keyLength]
@@ -40,7 +40,6 @@ func insert(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(c.Query("redirectURL"))
 	redirectURL, err := url.Parse(c.Query("redirectURL"))
 	if err != nil {
 		c.JSON(400, "bad redirectURL")
@@ -112,6 +111,44 @@ func handleDelete(c *gin.Context) {
 	c.JSON(200, "OK")
 }
 
+func handleUpdate(c *gin.Context) {
+	redirectKey := c.Query("redirectKey")
+	fmt.Println(redirectKey)
+	if isInvalidKey(redirectKey) {
+		c.JSON(400, "Bad redirectKey")
+		return
+	}
+
+	oldRedirectURL, err := url.Parse(c.Query("oldRedirectURL"))
+	if err != nil {
+		c.JSON(400, "bad old redirectURL")
+		return
+	}
+
+	if oldRedirectURL.Host == "" {
+		c.JSON(400, "bad old redirectURL")
+		return
+	}
+
+	newRedirectURL, err := url.Parse(c.Query("newRedirectURL"))
+	if err != nil {
+		c.JSON(400, "bad new redirectURL")
+		return
+	}
+
+	if newRedirectURL.Host == "" {
+		c.JSON(400, "bad new redirectURL")
+		return
+	}
+
+	err = updateRedirect(redirectKey, newRedirectURL.Host)
+	if err != nil {
+		c.JSON(400, fmt.Sprintf("error was %s", err.Error()))
+	}
+
+	c.JSON(200, "OK")
+}
+
 func main() {
 	router := gin.Default()
 	router.GET("/:redirect", redirect)
@@ -122,6 +159,7 @@ func main() {
 	routerAdmin.POST("/insert", insert)
 	routerAdmin.DELETE("/:redirectKey", handleDelete)
 	routerAdmin.GET("/all", allRedirects)
+	routerAdmin.PUT("/update", handleUpdate)
 
 	// seperate out the admin routes from the normal routes
 	go func() {
