@@ -89,6 +89,15 @@ func redirect(c *gin.Context) {
 	c.Redirect(http.StatusMovedPermanently, fmt.Sprintf("https://%s", redirectURL))
 }
 
+func allRedirects(c *gin.Context) {
+	redirects, err := getAllRedirects()
+	if err != nil {
+		c.JSON(400, fmt.Sprintf("err was %s", err))
+	}
+
+	c.JSON(200, redirects)
+}
+
 func main() {
 	router := gin.Default()
 	router.GET("/:redirect", redirect)
@@ -97,6 +106,7 @@ func main() {
 	routerAdmin := gin.Default()
 	routerAdmin.GET("/insert", insert)
 	routerAdmin.POST("/insert", insert)
+	routerAdmin.GET("/all", allRedirects)
 
 	// seperate out the admin routes from the normal routes
 	go func() {

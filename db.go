@@ -7,6 +7,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type redirects struct {
+	Key   string `json:"redirectKey"`
+	Value string `json:"redirectValue"`
+}
+
 func getUrlFromKey(redirectKey string) (string, error) {
 	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
 
@@ -44,4 +49,31 @@ func insertIntoDB(redirectKey, redirectURL string) error {
 	}
 
 	return nil
+}
+
+func getAllRedirects() ([]redirects, error) {
+	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
+	if err != nil {
+		return []redirects{}, err
+	}
+
+	defer db.Close()
+	rows, err := db.Query(`select redirectKey, redirectURL from links`)
+	if err != nil {
+		return []redirects{}, nil
+	}
+
+	var allRedirects []redirects
+
+	for rows.Next() {
+		tmp := redirects{}
+
+		if err := rows.Scan(&tmp.Key, &tmp.Value); err != nil {
+			return allRedirects, err
+		}
+
+		allRedirects = append(allRedirects, tmp)
+	}
+
+	return allRedirects, nil
 }
