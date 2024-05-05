@@ -77,3 +77,18 @@ func getAllRedirects() ([]redirects, error) {
 
 	return allRedirects, nil
 }
+
+func deleteRedirect(key string) error {
+	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+	_, err = db.Exec(`delete from links where redirectKey = ?`, key)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

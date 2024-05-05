@@ -98,6 +98,20 @@ func allRedirects(c *gin.Context) {
 	c.JSON(200, redirects)
 }
 
+func handleDelete(c *gin.Context) {
+	redirectKey := c.Param("redirectKey")
+	if isInvalidKey(redirectKey) {
+		c.JSON(400, "Bad redirectKey")
+	}
+
+	err := deleteRedirect(redirectKey)
+	if err != nil {
+		c.JSON(400, "Bad redirectKey")
+	}
+
+	c.JSON(200, "OK")
+}
+
 func main() {
 	router := gin.Default()
 	router.GET("/:redirect", redirect)
@@ -106,6 +120,7 @@ func main() {
 	routerAdmin := gin.Default()
 	routerAdmin.GET("/insert", insert)
 	routerAdmin.POST("/insert", insert)
+	routerAdmin.DELETE("/:redirectKey", handleDelete)
 	routerAdmin.GET("/all", allRedirects)
 
 	// seperate out the admin routes from the normal routes
