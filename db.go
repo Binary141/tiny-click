@@ -12,8 +12,10 @@ type redirects struct {
 	Value string `json:"redirectValue"`
 }
 
+const dbURL = "root:secret@tcp(db:3306)/urls"
+
 func getUrlFromKey(redirectKey string) (string, error) {
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
+	db, err := sql.Open("mysql", dbURL)
 
 	if err != nil {
 		return "", err
@@ -36,7 +38,7 @@ func insertIntoDB(redirectKey, redirectURL string) error {
 		return errors.New("Invalid redirect key!")
 	}
 
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
+	db, err := sql.Open("mysql", dbURL)
 	if err != nil {
 		return err
 	}
@@ -52,7 +54,7 @@ func insertIntoDB(redirectKey, redirectURL string) error {
 }
 
 func getAllRedirects() ([]redirects, error) {
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
+	db, err := sql.Open("mysql", dbURL)
 	if err != nil {
 		return []redirects{}, err
 	}
@@ -79,7 +81,7 @@ func getAllRedirects() ([]redirects, error) {
 }
 
 func deleteRedirect(key string) error {
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
+	db, err := sql.Open("mysql", dbURL)
 	if err != nil {
 		return err
 	}
@@ -94,13 +96,33 @@ func deleteRedirect(key string) error {
 }
 
 func updateRedirect(redirectKey, redirectURL string) error {
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(127.0.0.1:3306)/urls")
+	db, err := sql.Open("mysql", dbURL)
 	if err != nil {
 		return err
 	}
 
 	defer db.Close()
 	_, err = db.Exec(`update links set redirectURL = ? where redirectKey = ?`, redirectURL, redirectKey)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func seedDB() error {
+	db, err := sql.Open("mysql", dbURL)
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+	_, err = db.Exec(`
+		create table if not exists links (
+			id int primary key auto_increment,
+			redirectURL varchar(255),
+			redirectKey varchar(128) unique
+		)`)
 	if err != nil {
 		return err
 	}

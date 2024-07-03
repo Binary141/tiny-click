@@ -36,7 +36,7 @@ func insert(c *gin.Context) {
 	redirectKey = redirectKey[0:keyLength]
 
 	if isInvalidKey(redirectKey) {
-		c.JSON(400, "bad redirectKey")
+		c.JSON(500, "bad redirectKey")
 		return
 	}
 
@@ -53,7 +53,7 @@ func insert(c *gin.Context) {
 
 	err = insertIntoDB(redirectKey, redirectURL.Host)
 	if err != nil {
-		c.JSON(400, fmt.Sprintf("could not insert into db: %s", err.Error()))
+		c.JSON(500, fmt.Sprintf("could not insert into db: %s", err.Error()))
 		return
 	}
 
@@ -92,6 +92,7 @@ func allRedirects(c *gin.Context) {
 	redirects, err := getAllRedirects()
 	if err != nil {
 		c.JSON(400, fmt.Sprintf("err was %s", err))
+		return
 	}
 
 	c.JSON(200, redirects)
@@ -101,11 +102,13 @@ func handleDelete(c *gin.Context) {
 	redirectKey := c.Param("redirectKey")
 	if isInvalidKey(redirectKey) {
 		c.JSON(400, "Bad redirectKey")
+		return
 	}
 
 	err := deleteRedirect(redirectKey)
 	if err != nil {
-		c.JSON(400, "Bad redirectKey")
+		c.JSON(400, "Unable to delete redirect key")
+		return
 	}
 
 	c.JSON(200, "OK")
@@ -143,10 +146,21 @@ func handleUpdate(c *gin.Context) {
 
 	err = updateRedirect(redirectKey, newRedirectURL.Host)
 	if err != nil {
-		c.JSON(400, fmt.Sprintf("error was %s", err.Error()))
+		c.JSON(400, fmt.Sprintf("error updating redirect %s", err.Error()))
+		return
 	}
 
 	c.JSON(200, "OK")
+}
+
+func handleSeed(c *gin.Context) {
+	err := seedDB()
+	if err != nil {
+		c.JSON(500, err.Error())
+		return
+	}
+
+	c.JSON(200, "Seeded")
 }
 
 func main() {
@@ -160,6 +174,7 @@ func main() {
 	routerAdmin.DELETE("/:redirectKey", handleDelete)
 	routerAdmin.GET("/all", allRedirects)
 	routerAdmin.PUT("/update", handleUpdate)
+	routerAdmin.PUT("/seed", handleSeed)
 
 	// seperate out the admin routes from the normal routes
 	go func() {
