@@ -16,7 +16,7 @@ services:
       context: ./tiny-click
       dockerfile: Dockerfile
     volumes:
-      - ./tiny-click/:/app
+      - ./tiny-click:/app
     ports:
       - "8080:8080"
     networks:
