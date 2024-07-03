@@ -1,16 +1,15 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
   <header>
     <div class="wrapper">
-      <HelloWorld msg="Tiny Click" />
+        <h1 class='green' style='text-align: center;'>Tiny Click</h1>
 
       <nav>
         <RouterLink to="/">URLs</RouterLink>
-        <RouterLink to="/about">Add URL</RouterLink>
+        <RouterLink to="/add">Add URL</RouterLink>
       </nav>
     </div>
   </header>
