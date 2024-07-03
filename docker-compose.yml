@@ -11,6 +11,17 @@ services:
     networks:
       - thing
 
+  frontend:
+    build:
+      context: ./tiny-click
+      dockerfile: Dockerfile
+    volumes:
+      - ./tiny-click/:/app
+    ports:
+      - "8080:8080"
+    networks:
+      - thing
+
   db:
     image: mysql:latest
     environment:
@@ -24,3 +35,5 @@ services:
 networks:
   thing:
 
+volumes:
+  db-data:
