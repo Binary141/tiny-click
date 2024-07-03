@@ -1,6 +1,13 @@
 <template>
     <ul v-for="url in urls" style="text-align: center">
-        <a :href="'http://localhost:5000/' + url.redirectKey" target=_blank>{{ url.redirectKey }}</a> -> {{ url.redirectValue }}
+        <a :href="serverURL + '/' + url.redirectKey" target=_blank>
+            {{ url.redirectKey }}
+        </a> 
+        -> {{ url.redirectValue }}
+        <button class='green' @click='deleteURL(url.redirectKey)'>
+            Delete
+        </button> 
+
     </ul>
 
 </template>
@@ -13,15 +20,31 @@ export default {
     const urls = ref([]);
     const serverURL = import.meta.env.VITE_SERVER_URL;
 
+    async function getURLs () {
+      const urlsResp = await fetch(`${serverURL}/all`);
+      urls.value = await urlsResp.json();
+    }
+
     // Fetch data on component mount
     onMounted(async () => {
-        const urlsResp = await fetch(`${serverURL}/all`);
-      urls.value = await urlsResp.json();
+        getURLs()
     });
+
+    async function deleteURL (redirectKey) {
+      console.log(redirectKey)
+      const deleteResp = await fetch(`${serverURL}/${redirectKey}`, 
+          {
+              method: "DELETE"
+          }
+      );
+
+      getURLs()
+    }
 
     return {
       urls,
-      serverURL
+      serverURL,
+      deleteURL
     };
   }
 };
