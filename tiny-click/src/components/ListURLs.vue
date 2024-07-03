@@ -1,7 +1,3 @@
-<script setup>
-import SupportIcon from './icons/IconSupport.vue'
-</script>
-
 <template>
     <ul v-for="url in urls" style="text-align: center">
         <a :href="'http://localhost:5000/' + url.redirectKey" target=_blank>{{ url.redirectKey }}</a> -> {{ url.redirectValue }}
@@ -10,8 +6,23 @@ import SupportIcon from './icons/IconSupport.vue'
 </template>
 
 <script>
-    import { ref } from 'vue'
-    var urlsResp = await(fetch('http://localhost:5001/all'))
+import { ref, onMounted } from 'vue';
 
-    const urls = ref(await(urlsResp.json()))
+export default {
+  setup() {
+    const urls = ref([]);
+    const serverURL = import.meta.env.VITE_SERVER_URL;
+
+    // Fetch data on component mount
+    onMounted(async () => {
+        const urlsResp = await fetch(`${serverURL}/all`);
+      urls.value = await urlsResp.json();
+    });
+
+    return {
+      urls,
+      serverURL
+    };
+  }
+};
 </script>
