@@ -123,16 +123,16 @@ func handleUpdate(c *gin.Context) {
 		return
 	}
 
-	oldRedirectURL, err := url.Parse(c.Query("oldRedirectURL"))
-	if err != nil {
-		c.JSON(400, "bad old redirectURL")
-		return
-	}
+	// oldRedirectURL, err := url.Parse(c.Query("oldRedirectURL"))
+	// if err != nil {
+	// 	c.JSON(400, "bad old redirectURL")
+	// 	return
+	// }
 
-	if oldRedirectURL.Host == "" {
-		c.JSON(400, "bad old redirectURL")
-		return
-	}
+	// if oldRedirectURL.Host == "" {
+	// 	c.JSON(400, "bad old redirectURL")
+	// 	return
+	// }
 
 	newRedirectURL, err := url.Parse(c.Query("newRedirectURL"))
 	if err != nil {
@@ -141,7 +141,7 @@ func handleUpdate(c *gin.Context) {
 	}
 
 	if newRedirectURL.Host == "" {
-		c.JSON(400, "bad new redirectURL")
+		c.JSON(400, "the url cannot be empty")
 		return
 	}
 
