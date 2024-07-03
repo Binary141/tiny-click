@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -165,10 +166,14 @@ func handleSeed(c *gin.Context) {
 
 func main() {
 	router := gin.Default()
+	router.Use(cors.Default())
+
 	router.GET("/:redirect", redirect)
 	router.GET("/home", home)
 
 	routerAdmin := gin.Default()
+	routerAdmin.Use(cors.Default())
+
 	routerAdmin.GET("/insert", insert)
 	routerAdmin.POST("/insert", insert)
 	routerAdmin.DELETE("/:redirectKey", handleDelete)
