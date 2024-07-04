@@ -1,4 +1,5 @@
 <template>
+
   <ul v-for="url in urls" :key="url.redirectKey" style="text-align: center">
     <div :id="url.redirectKey">
       <a :href="serverURL + '/' + url.redirectKey" target="_blank">
@@ -8,13 +9,14 @@
       <button class="green" @click="deleteURL(url.redirectKey)">
         Delete
       </button> 
-      <button class="green" @click="editURL(url.redirectKey)">
+      <button v-if="editingKey !== url.redirectKey" class="green" @click="editURL(url.redirectKey, url.redirectValue)">
         Edit
       </button> 
+      <button v-if="editingKey === url.redirectKey" class="green" @click="cancel">
+        Cancel
+      </button> 
     </div>
-  </ul>
-
-  <div v-if="editingKey">
+  <div v-if="editingKey === url.redirectKey" style='text-align: center'>
     <form @submit.prevent="submit">
       <p style="display: inline; text-align: center">
         <label for="scheme"></label>
@@ -24,10 +26,10 @@
         </select>
         <input style="margin:0.3rem" type="text" v-model="newURL" />
       </p>
-      <button type="submit" style="display:inline">Submit</button>
-      <button @click="cancel" type="button" style="display:inline">Cancel</button>
+      <button style="display:inline" class="green">Submit</button>
     </form>
   </div>
+  </ul>
 </template>
 
 <script>
@@ -69,8 +71,20 @@ export default {
       editingKey.value = null;
     }
 
-    function editURL (redirectKey) {
-      editingKey.value = redirectKey;
+    function editURL (redirectKey, redirectValue) {
+      const isHttps = redirectValue.includes('https://')
+      const isHttp = redirectValue.includes('http://')
+      
+      if (isHttps) {
+        newScheme.value = 'https'
+        redirectValue = redirectValue.split('https://')[1]
+      } else if (isHttp) {
+        newScheme.value = 'http'
+        redirectValue = redirectValue.split('http://')[1]
+      }
+
+      newURL.value = redirectValue
+      editingKey.value = redirectKey
     }
 
     async function deleteURL (redirectKey) {

@@ -52,7 +52,7 @@ func insert(c *gin.Context) {
 		return
 	}
 
-	err = insertIntoDB(redirectKey, redirectURL.Host)
+	err = insertIntoDB(redirectKey, fmt.Sprintf("%s://%s", redirectURL.Scheme, redirectURL.Host))
 	if err != nil {
 		c.JSON(500, fmt.Sprintf("could not insert into db: %s", err.Error()))
 		return
@@ -145,7 +145,7 @@ func handleUpdate(c *gin.Context) {
 		return
 	}
 
-	err = updateRedirect(redirectKey, newRedirectURL.Host)
+	err = updateRedirect(redirectKey, fmt.Sprintf("%s://%s", newRedirectURL.Scheme, newRedirectURL.Host))
 	if err != nil {
 		c.JSON(400, fmt.Sprintf("error updating redirect %s", err.Error()))
 		return
