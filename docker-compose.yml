@@ -12,11 +12,11 @@ services:
       - tiny-click
 
   frontend:
-    build:
-      context: ./tiny-click
-      dockerfile: Dockerfile
+    image: node:lts-alpine
+    working_dir: /app
+    command: npm run dev
     volumes:
-      - ./tiny-click:/app
+      - ./:/app
     ports:
       - "8080:8080"
     networks:
@@ -25,7 +25,7 @@ services:
   prodFrontend:
     image: httpd:2.4
     volumes:
-      - ./tiny-click/dist:/usr/local/apache2/htdocs/
+      - ./dist:/usr/local/apache2/htdocs/
     ports:
       - "80:80"
     networks:
