@@ -17,7 +17,7 @@
 </template>
 
 <script>
-    const serverURL = import.meta.env.VITE_SERVER_URL
+    const adminServerURL = import.meta.env.VITE_ADMIN_SERVER_URL
     export default {
         methods: {
             async buttonClick(event) {
@@ -25,7 +25,7 @@
                 var url = document.getElementById('newURL').value
                 var scheme = document.getElementById('scheme').value
 
-                var resp = await(fetch(`${serverURL}/insert?redirectURL=${scheme}://${url}`))
+                var resp = await(fetch(`${adminServerURL}/insert?redirectURL=${scheme}://${url}`))
                 console.log(resp);
                 console.log("button was clicked")
             }

@@ -39,12 +39,13 @@ export default {
   setup() {
     const urls = ref([]);
     const serverURL = import.meta.env.VITE_SERVER_URL;
+    const adminServerURL = import.meta.env.VITE_ADMIN_SERVER_URL;
     const editingKey = ref(null);
     const newURL = ref('');
     const newScheme = ref('http');
 
     async function getURLs () {
-      const urlsResp = await fetch(`${serverURL}/all`);
+      const urlsResp = await fetch(`${adminServerURL}/all`);
       urls.value = await urlsResp.json();
     }
 
@@ -58,7 +59,7 @@ export default {
       const scheme = newScheme.value;
       const redirectKey = editingKey.value;
 
-      const reqURL = `${serverURL}/update?redirectKey=${redirectKey}&newRedirectURL=${scheme}://${url}`;
+      const reqURL = `${adminServerURL}/update?redirectKey=${redirectKey}&newRedirectURL=${scheme}://${url}`;
       const updateResp = await fetch(reqURL, {
           method: "PUT"
       });
@@ -88,7 +89,7 @@ export default {
     }
 
     async function deleteURL (redirectKey) {
-      const deleteResp = await fetch(`${serverURL}/${redirectKey}`, {
+      const deleteResp = await fetch(`${adminServerURL}/${redirectKey}`, {
           method: "DELETE"
       });
 
@@ -97,6 +98,7 @@ export default {
 
     return {
       urls,
+      adminServerURL,
       serverURL,
       deleteURL,
       editURL,
