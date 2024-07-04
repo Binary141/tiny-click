@@ -9,7 +9,7 @@ services:
     depends_on:
       - db
     networks:
-      - thing
+      - tiny-click
 
   frontend:
     build:
@@ -20,7 +20,16 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - thing
+      - tiny-click
+
+  prodFrontend:
+    image: httpd:2.4
+    volumes:
+      - ./tiny-click/dist:/usr/local/apache2/htdocs/
+    ports:
+      - "80:80"
+    networks:
+      - tiny-click
 
   db:
     image: mysql:latest
@@ -30,7 +39,7 @@ services:
     volumes:
       - db-data:/var/lib/mysql
     networks:
-      - thing
+      - tiny-click
 
 networks:
   thing:
